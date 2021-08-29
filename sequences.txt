@@ -1,0 +1,41 @@
+Sections
+12 Each side, 24 total
+
+1, hand
+2, forearm
+3, upper arm
+4, shoulder
+
+5, foot
+6, calf
+7, Thigh
+
+8, Abs
+9, Chest
+10, eyes
+11, ears
+12, hair / beard
+
+Effects
+Power up: 3 versions in increasing height
+1 foor, calf, thigh, calf, foot
+2 foot, calf, thigh, abs, thigh, calf, foot
+3 foot, calf, thigh, abs, chest, eyes, ears, hair, stay on
+
+Power down, slow turnoff from head to toe
+
+
+Scan: right to left and back
+all off then...
+turn on ->Right hand, forearm, upper arm, shoulder, chest, abs, thigh, calf, foot > left foot, calf, thigh, abs, chest, shoulder, upper arm, forearm, hand
+Then she turns on and does the same scan, I stay on
+then scan in reverse turning off her lights
+When mine are all off thrn all back on
+
+
+touch: flicker on hands chest and face
+all on
+sequence from hand to arm to cheast to head and back
+flicker each piece
+
+Motorcycle: sequence arms and legs to simulate movement
