@@ -33,8 +33,6 @@ Each side
 
 */
 
-
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdbool.h>
@@ -129,6 +127,14 @@ bool IsTimedOut(uint32_t period, uint32_t startTime)
     sei();
     
     return to;
+}
+
+//return after ms milliseconds
+void Delay(uint32_t ms)
+{
+    uint32_t Time = GetTime();
+    
+    while(!IsTimedOut(ms, Time));
 }
 
 // clock interrupt - clear flag immediately to resume count
@@ -273,105 +279,317 @@ static void AllOff()
     PORTD =0;
 }
 
+#define MC_SEGMENTS    23   /* how many segments to sequence through */
+#define MC_WIDTH       3    /* how many segments to have on at one time*/
+#define MC_CYCLES      3    /* how many times to cycle through the all the segments*/
+
 static void motorcycle(void)
 {
-    uint32_t Time;
-    uint32_t delay = 100;
-    int step = 0;
-    static bool on = true;
+    uint32_t delay = 50;
+    //int step = 0;
+    //static bool on = true;
     bool done = false;
     int i=0;
     int j =0;
     
-    Time = GetTime();
-    
     SerialPut( "Motorcycle\n");
-    
-    #define MC_SEGMENTS    23   /* how many segments to sequence through */
-    #define MC_WIDTH       3    /* how many segments to have on at one time*/
-    #define MC_CYCLES      3    /* how many times to cycle through the all the segments*/
-    
+      
     while(!done)
     {
         //10 elements to cycle
         //cycle for ?? measures
             
-        if(IsTimedOut(delay, Time))
+        Delay(delay);
+
+        //SerialPut( "M# "); SerialPut32(j); SerialPut( ",");SerialPut32(i); SerialPut( ",");SerialPut32(ELPins[i].bit); SerialPut( "\n");
+            
+        SET_ON(ELPins[i].port, ELPins[i].bit );
+            
+        if(i>= MC_WIDTH)
         {
-            SerialPut( "M# "); SerialPut32(j); SerialPut( ",");SerialPut32(i); SerialPut( ",");SerialPut32(ELPins[i].bit); SerialPut( "\n");
+            SET_OFF(ELPins[i- MC_WIDTH].port, ELPins[i- MC_WIDTH].bit );
+        }
+        else
+        {
+            SET_OFF(ELPins[(MC_SEGMENTS - MC_WIDTH)+i].port, ELPins[(MC_SEGMENTS- MC_WIDTH) +i].bit );
+        }
             
-            SET_ON(ELPins[i].port, ELPins[i].bit );
-            
-            if(i>= MC_WIDTH)
+        if(i++ > MC_SEGMENTS)
+        {
+            i=0;
+            if(j++ >= MC_CYCLES)
             {
-                SET_OFF(ELPins[i- MC_WIDTH].port, ELPins[i- MC_WIDTH].bit );
-            }
-            else
-            {
-                SET_OFF(ELPins[(MC_SEGMENTS - MC_WIDTH)+i].port, ELPins[(MC_SEGMENTS- MC_WIDTH) +i].bit );
-            }
-            
-            Time = GetTime();
-            
-            if(i++ > MC_SEGMENTS)
-            {
-                i=0;
-                if(j++ >= MC_WIDTH)
-                {
-                    done = true;
-                }
+                done = true;
             }
         }
     }        
                         
 }
 
+//All on
+//down then up
+void metropolisGrace(void)
+{
+    int i=0;
+    int j=0;
+    uint32_t delay = BEAT_TIME;// / count;
+    
+    SerialPut( "metropolis Grace");
+
+    Delay(delay);
+    SET_OFF(ELPins[i].port, ELPins[i].bit );
+    SET_OFF(ELPins[j].port, ELPins[j].bit );
+    i++;j++;
+    
+    Delay(delay);
+    SET_OFF(ELPins[i].port, ELPins[i].bit );
+    SET_OFF(ELPins[j].port, ELPins[j].bit );
+    i++;j++;
+    
+    Delay(delay);
+    SET_OFF(ELPins[i].port, ELPins[i].bit );
+    SET_OFF(ELPins[j].port, ELPins[j].bit );
+    i++;j++;
+    
+    Delay(delay);
+    SET_OFF(ELPins[i].port, ELPins[i].bit );
+    SET_OFF(ELPins[j].port, ELPins[j].bit );
+    i++;j++;
+    
+    Delay(delay);
+    SET_OFF(ELPins[i].port, ELPins[i].bit );
+    SET_OFF(ELPins[j].port, ELPins[j].bit );
+    i++;j++;
+    
+    Delay(delay);
+    SET_OFF(ELPins[i].port, ELPins[i].bit );
+    SET_OFF(ELPins[j].port, ELPins[j].bit );
+    i++;j++;
+    
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i--;j--;
+    
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i--;j--;
+    
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i--;j--;
+    
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i--;j--;
+    
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i--;j--;
+    
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i--;j--;
+
+}
+
+
+#define KEITH_SEGMENTS    23   /* how many segments to sequence through */
+#define KEITH_WIDTH       3    /* how many segments to have on at one time*/
+#define KEITH_CYCLES      3    /* how many times to cycle through the all the segments*/
+
+//all off but arms
+//rotate arms
+void MetropolisKeith(void)
+{
+    uint32_t delay = 50;
+    //int step = 0;
+    //static bool on = true;
+    bool done = false;
+    int i=0;
+    int j =0;
+    
+    SerialPut( "Metropolis Keith\n");
+      
+    while(!done)
+    {
+        //10 elements to cycle
+        //cycle for ?? measures
+            
+        Delay(delay);
+
+        //SerialPut( "M# "); SerialPut32(j); SerialPut( ",");SerialPut32(i); SerialPut( ",");SerialPut32(ELPins[i].bit); SerialPut( "\n");
+            
+        SET_ON(ELPins[i].port, ELPins[i].bit );
+            
+        if(i>= KEITH_WIDTH)
+        {
+            SET_OFF(ELPins[i- KEITH_WIDTH].port, ELPins[i- KEITH_WIDTH].bit );
+        }
+        else
+        {
+            SET_OFF(ELPins[(KEITH_SEGMENTS - KEITH_WIDTH)+i].port, ELPins[(KEITH_SEGMENTS- KEITH_WIDTH) +i].bit );
+        }
+            
+        if(i++ > KEITH_SEGMENTS)
+        {
+            i=0;
+            if(j++ >= KEITH_CYCLES)
+            {
+                done = true;
+            }
+        }
+    }     
+    
+}
+
+//scan from fingertip to fingertip
 static void Scan(void)
 {
-    uint32_t Time;
-    uint32_t delay = 100;
+    uint32_t delay = 50;
     int step = 0;
     static bool on = true;
     bool done = false;
     
-    Time = GetTime();
-    
     while(!done)
     {
-        if(IsTimedOut(delay, Time))
+        Delay(delay);
+       
+        //SerialPut( "EL B# "); SerialPut32(step); SerialPut( ",");SerialPut32(ELPins[step].bit); SerialPut( "\n");
+        if(on)
         {
-            SerialPut( "EL B# "); SerialPut32(step); SerialPut( ",");SerialPut32(ELPins[step].bit); SerialPut( "\n");
-            if(on)
+            if(step < 24)
             {
-                if(step < 24)
-                {
-                    SET_ON(ELPins[step].port, ELPins[step].bit );
-                    step++;
-                }
-                else
-                {
-                    SerialPut( "set\n");
-                    on = !on;
-                }
-            } 
+                SET_ON(ELPins[step].port, ELPins[step].bit );
+                step++;
+            }
+            else
+            {
+                SerialPut( "set\n");
+                on = !on;
+            }
+        } 
     
-            if(!on)
+        if(!on)
+        {
+            if(step > 0)
             {
-                if(step > 0)
-                {
-                    SET_OFF(ELPins[step].port, ELPins[step].bit );
-                    step--;
-                }
-                else
-                {
-                    SerialPut( "Reset\n");
-                    on = !on;
-                    done = true;
-                }        
-            }   
-            Time = GetTime();
-        }        
+                SET_OFF(ELPins[step].port, ELPins[step].bit );
+                step--;
+            }
+            else
+            {
+                SerialPut( "Reset\n");
+                on = !on;
+                done = true;
+            }        
+        }   
+       
     }    
+}
+
+
+static void PowerUp(char count)
+{
+    //uint32_t Time ;
+    int i=0;
+    int j=12;
+    uint32_t delay = BEAT_TIME / count;
+    //bool done = false;
+    
+    //Time = GetTime();
+    
+    //Feet on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+        
+    //calves on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+        
+    //thighs on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+        
+    if(count == 3) 
+    {
+        AllOff();
+        return;
+    }        
+    
+    //hips on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+    
+    //abs on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+    
+    //Chest on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+    
+    //Shoulders on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+    
+    //arms on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+    
+    if(count == 8) 
+    {
+        AllOff();
+        return;
+    }        
+    
+    //Shoulders on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+    
+    //arms on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+    
+    //Shoulders on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+    
+    //arms on
+    Delay(delay);
+    SET_ON(ELPins[i].port, ELPins[i].bit );
+    SET_ON(ELPins[j].port, ELPins[j].bit );
+    i++, j++;
+    
+    AllOff();
+        
 }
 
 bool ButtonPressed(void)
@@ -387,40 +605,11 @@ bool ButtonPressed(void)
     return pressed;
 }
 
-static bool PowerUp(char count)
-{
-    uint32_t Time ;
-    int i=0;
-    uint32_t delay = BEAT_TIME / count;
-    bool done = false;
-    
-    Time = GetTime();
-    
-    while(!done)
-    {
-        if(IsTimedOut(delay, Time))
-        {
-            SET_ON(ELPins[i].port, ELPins[i].bit );
-            i++;
-            
-            if(i>count) done = true;
-            
-            Time = GetTime();
-        }
-    }    
-     AllOff();
-     
-    return done;
-}
-
 int main(void)
 {
     static uint32_t Time;
-    //static uint32_t oldTime;
-    //int step = 0;
     int beat = 1;
-    int measure = 0;
-    //uint32_t delay = 100;
+    int measure = 0;  
 
     IOSetup();
     SerialInit();
@@ -436,11 +625,9 @@ int main(void)
     while(ButtonPressed() == false);
     
     SerialPut( "** Power up\n");
-    PowerUp(6);
-    PowerUp(15);
-    PowerUp(24);                 
-
-
+    PowerUp(3);
+    PowerUp(8);
+    PowerUp(11);                 
 
     /* Replace with your application code */
     while (1) 
@@ -474,7 +661,7 @@ int main(void)
                     break;
                 case 3:
                     SerialPut("** case 3\n");
-                    AllOff();
+                    metropolisGrace();
                     measure++;
                     break;
                 case 4:
@@ -490,19 +677,25 @@ int main(void)
                 case 6:
                      SerialPut("** case 6\n");
                     Scan();
-                    //step = 0;
-                break;
+                    measure++;
+                    break;
+                case 7:
+                    SerialPut("** case 5\n");
+                    AllOn();
+                    measure++;
+                    break;
+                case 8:
+                    SerialPut("** case 5\n");
+                    AllOff();
+                    measure++;
+                    break;
+                case 9:
+                    SerialPut("** case 5\n");
+                    MetropolisKeith();
+                    measure++;
+                    break;
             }
-                //step++;
-                //if(step>5) step = 0;
-                //
-                ////eliminate rounding errors in floating point math for the period
-                ////perioderr = period - intperiod;
-                ////
-                ////period = PERIOD + perioderr;
-                ////intperiod = period;
-                //
-                ////i++;
+            
         }    
     }//while
 }
